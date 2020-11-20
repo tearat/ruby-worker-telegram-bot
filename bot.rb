@@ -9,14 +9,14 @@ Dotenv.load
 TOKEN   = ENV["TOKEN"]
 CHANNEL = ENV["CHANNEL"]
 
-channels = YAML.load File.read 'channels.yml'
+channels = YAML.safe_load File.read 'channels.yml'
 
 
 class Telegram::Bot::Client
   def fire(channel)
     folder = channel["folder"]
     files = Dir.entries(folder).filter { |f| f != "." && f != ".." }
-    if files.size == 0
+    if files.empty?
       puts "Image folder is empty :C".red
       return
     end
@@ -28,7 +28,7 @@ class Telegram::Bot::Client
     puts "My choice is...  #{file}! (#{ext})"
     puts "Fire!".yellow
 
-    self.api.send_photo(chat_id: channel["id"], photo: Faraday::UploadIO.new(file_path, ext))
+    api.send_photo(chat_id: channel["id"], photo: Faraday::UploadIO.new(file_path, ext))
 
     File.delete(file_path)
 
@@ -38,8 +38,8 @@ class Telegram::Bot::Client
 end
 
 
-$bot = Telegram::Bot::Client.new(TOKEN) 
+$bot = Telegram::Bot::Client.new(TOKEN)
 
-channels.each do |title, channel|
+channels.each do |_, channel|
   $bot.fire channel
 end
